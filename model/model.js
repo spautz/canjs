@@ -152,6 +152,18 @@ steal('can/observe', function() {
 		 *     Friend = can.Model({
 		 *       id: "Id"
 		 *     },{});
+		 * 
+		 * ## Implement with a Function
+		 * 
+		 * If your model's data does not include an id value, you can provide a function
+		 * to generate it:
+		 * 
+		 *     can.Model('MyClass', {
+		 *       id: function(attributes, modelClass) {
+		 *         return attributes.field1 + '-' + attributes.field2;
+		 *       },
+		 *       idField: 'id'
+		 *     },{});
 		 */
 	ajaxMethods = {
 		/**
@@ -565,6 +577,12 @@ steal('can/observe', function() {
 			if(!self.fullName || self.fullName == base.fullName){
 				self.fullName = self._shortName = "Model"+(++modelNum);
 			}
+
+			if (can.isFunction(this.id)) {
+				this._generate_id_fn = this.id;
+				this.id = this.idField || 'id';
+			}
+
 			// Ddd ajax converters.
 			this.store = {};
 			this._reqs = 0;
@@ -786,6 +804,10 @@ steal('can/observe', function() {
 			if ( attributes instanceof this ) {
 				attributes = attributes.serialize();
 			}
+			if (!attributes[this.id] && can.isFunction(this._generate_id_fn)) {
+				attributes[this.id] = this._generate_id_fn.call(attributes, attributes, this);
+			}
+			
 			var model = this.store[attributes[this.id]] ? this.store[attributes[this.id]].attr(attributes) : new this( attributes );
 			if(this._reqs){
 				this.store[attributes[this.id]] = model;

@@ -238,6 +238,47 @@ test(".models with custom id", function() {
 	});
 });
 
+test(".models with generated id", function() {
+	can.Model("GeneratedId", {
+		findAll : steal.root.join("can/model/test") + "/customids.json",
+		id : function(attributes, modelClass) {
+			return attributes._id + '-' + attributes.name;
+		}
+	}, {
+		getName : function() {
+			return this.name;
+		}
+	});
+	stop();
+	GeneratedId.findAll().done(function(results) {
+		equals(results.length, 2, 'Got two items back');
+		equals(results[0].id, '1-Justin', 'First id right');
+		equals(results[1].id, '2-Brian', 'Second id right');
+		start();
+	});
+});
+
+test(".models with custom generated id", function() {
+	can.Model("GeneratedId", {
+		findAll : steal.root.join("can/model/test") + "/customids.json",
+		id : function(attributes, modelClass) {
+			return attributes._id + '-' + attributes.name;
+		},
+		idField : 'generated_id'
+	}, {
+		getName : function() {
+			return this.name;
+		}
+	});
+	stop();
+	GeneratedId.findAll().done(function(results) {
+		equals(results.length, 2, 'Got two items back');
+		equals(results[0].generated_id, '1-Justin', 'First id right');
+		equals(results[1].generated_id, '2-Brian', 'Second id right');
+		start();
+	});
+});
+
 
 /*
 test("async setters", function(){
